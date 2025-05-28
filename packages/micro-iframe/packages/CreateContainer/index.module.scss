@@ -1,0 +1,29 @@
+.iframe-base{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  .iframe-base-content{
+    flex:1;
+    min-height: 0;
+    display: flex;
+    flex-direction:row ;
+    .aside-content{
+      height: 100%;
+    }
+    .main-content{
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      .main-section{
+        flex: 1;
+        min-height: 0;
+        .main-section-content{
+          height: 100%;
+        }
+      }
+    }
+  }
+}
