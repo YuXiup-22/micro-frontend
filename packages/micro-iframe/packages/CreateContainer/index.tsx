@@ -1,8 +1,12 @@
 import { createRoot } from "react-dom/client";
 import ContainerLayout from "./Container";
 import type { ContainerDomRefs } from "./Container";
-export function CreateContainer(): Promise<ContainerDomRefs> {
+import type { CreateMainAppProps } from "../CreateMainApp/index";
+export function CreateContainer(
+  props: CreateMainAppProps
+): Promise<ContainerDomRefs> {
   return new Promise((resolve) => {
+    console.log(props, "props-----------");
     const iframeContainer = "root";
     const ContainerDom = document.getElementById(iframeContainer);
 
@@ -11,7 +15,10 @@ export function CreateContainer(): Promise<ContainerDomRefs> {
     };
 
     createRoot(ContainerDom!).render(
-      <ContainerLayout onRefsReady={handleRefsReady} />
+      <ContainerLayout
+        onRefsReady={handleRefsReady}
+        customBaseCom={props.customBaseCom}
+      />
     );
   });
 }
