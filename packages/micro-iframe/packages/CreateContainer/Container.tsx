@@ -11,9 +11,15 @@ interface ContainerLayoutProps {
   onRefsReady?: (refs: ContainerDomRefs) => void;
   customBaseCom?: CreateMainAppProps["customBaseCom"];
 }
-export default function ContainerLayout(props: ContainerLayoutProps) {
-  const { onRefsReady, customBaseCom } = props;
-  console.log(customBaseCom,'customBaseCom')
+export default function ContainerLayout({
+  onRefsReady,
+  customBaseCom,
+}: ContainerLayoutProps) {
+  const {
+    header: CustomHeader,
+    menu: CustomMenu,
+    tab: CustomTab,
+  } = customBaseCom || {};
   const teleportDomRefs = useRef<ContainerDomRefs>({
     headerDom: null,
     menuDom: null,
@@ -33,7 +39,7 @@ export default function ContainerLayout(props: ContainerLayoutProps) {
             teleportDomRefs.current.headerDom = el;
           }}
         >
-          {customBaseCom?.header || "header"}
+          {CustomHeader ? <CustomHeader /> : "header"}
         </div>
       </header>
       <section className={styles["iframe-base-content"]}>
@@ -44,7 +50,7 @@ export default function ContainerLayout(props: ContainerLayoutProps) {
             }}
             className={styles["aside-content"]}
           >
-            {customBaseCom?.menu || "aside"}
+            {CustomMenu ? <CustomMenu /> : "aside"}
           </div>
         </aside>
         <main className={styles["main-content"]}>
@@ -54,7 +60,7 @@ export default function ContainerLayout(props: ContainerLayoutProps) {
                 teleportDomRefs.current.tabDom = el;
               }}
             >
-              {customBaseCom?.tab || "tab"}
+              {CustomTab ? <CustomTab /> : "tab"}
             </div>
           </header>
           <section className={styles["main-section"]}>

@@ -6,9 +6,9 @@ import type { ContainerDomRefs } from "../CreateContainer/Container";
  */
 export interface CreateMainAppProps {
   customBaseCom?: {
-    header?: React.ReactNode;
-    menu?: React.ReactNode;
-    tab?: React.ReactNode;
+    header?: React.ComponentType;
+    menu?: React.ComponentType;
+    tab?: React.ComponentType;
   };
 }
 export async function CreateMainApp(
