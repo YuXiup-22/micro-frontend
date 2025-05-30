@@ -12,6 +12,7 @@ export async function createMainApp() {
       menu: Menu,
       tab: Tab,
     },
+    iframeContainer: "dd",
   });
   return { mountDom };
 }
