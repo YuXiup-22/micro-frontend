@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "mitt": "^3.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "rollup-plugin-visualizer": "^6.0.0",
