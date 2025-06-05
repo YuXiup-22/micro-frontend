@@ -1,9 +1,10 @@
 import { createRoot } from "react-dom/client";
 import ContainerLayout from "./Container";
 import type { ContainerDomRefs } from "./Container";
-import type { CreateMainAppProps } from "../CreateMainApp/index";
+import { bus } from "../bus/index";
+import type { InitContainerData } from "../bus/container/type";
 export function CreateContainer(
-  props: CreateMainAppProps
+  props: InitContainerData
 ): Promise<ContainerDomRefs> {
   return new Promise((resolve) => {
     const { iframeContainer = "#root" } = props || {};
@@ -17,14 +18,17 @@ export function CreateContainer(
     if (!containerDom)
       throw new Error("iframeContainer must to be #id string or HTMLElement");
 
+    const containerBus = bus("container");
+    containerBus.data.set({ initOptions: props });
+
     const handleRefsReady = (refs: ContainerDomRefs) => {
       resolve(refs);
     };
-
     createRoot(containerDom!).render(
       <ContainerLayout
         onRefsReady={handleRefsReady}
         customBaseCom={props.customBaseCom}
+        type={props.type}
       />
     );
   });

@@ -1,19 +1,42 @@
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  useMemo,
+  type CSSProperties,
+  useState,
+} from "react";
 import styles from "./index.module.scss";
-import type { CreateMainAppProps } from "../CreateMainApp/index";
+import { bus } from "../bus";
+import type { MainAppInitData, InitContainerData } from "../bus/container/type";
 export type ContainerDomRefs = {
   headerDom: HTMLDivElement | null;
   menuDom: HTMLDivElement | null;
   tabDom: HTMLDivElement | null;
   mountDom: HTMLDivElement | null;
+  microAppContainer: Element | null;
 };
 interface ContainerLayoutProps {
   onRefsReady?: (refs: ContainerDomRefs) => void;
-  customBaseCom?: CreateMainAppProps["customBaseCom"];
+  customBaseCom?: MainAppInitData["customBaseCom"];
+  type?: InitContainerData["type"];
+}
+function useContainerData() {
+  const containerBus = bus("container");
+  const [data, setData] = useState(containerBus.data.get());
+
+  useEffect(() => {
+    const cancel = containerBus.data.watch({
+      cb: (newData) => setData(newData),
+      watchKeys: ["microApps", "activeMicroAppName"],
+    });
+    return cancel;
+  }, []);
+  return data;
 }
 export default function ContainerLayout({
   onRefsReady,
   customBaseCom,
+  type,
 }: ContainerLayoutProps) {
   const {
     header: CustomHeader,
@@ -25,7 +48,25 @@ export default function ContainerLayout({
     menuDom: null,
     tabDom: null,
     mountDom: null,
+    microAppContainer: null,
   });
+  const containerData = useContainerData();
+  const microAppsContainerStyleComputed = useMemo<CSSProperties>(() => {
+    const resStyle: CSSProperties = {
+      display:
+        containerData.microApps?.length && containerData.activeMicroAppName
+          ? "block"
+          : "none",
+      position: "absolute",
+      zIndex: 1,
+      top: 0,
+      left: 0,
+      height: "100%",
+      width: "100%",
+    };
+    return resStyle;
+  }, []);
+  // const microAppContainerRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (onRefsReady && teleportDomRefs.current) {
       onRefsReady(teleportDomRefs.current);
@@ -75,6 +116,15 @@ export default function ContainerLayout({
           </section>
         </main>
       </section>
+      {type === "mainApp" && (
+        <div
+          ref={(el) => {
+            teleportDomRefs.current.microAppContainer = el;
+          }}
+          data-name="micro-app-container"
+          style={microAppsContainerStyleComputed}
+        ></div>
+      )}
     </div>
   );
 }

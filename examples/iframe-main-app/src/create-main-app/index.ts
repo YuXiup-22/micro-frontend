@@ -13,6 +13,18 @@ export async function createMainApp() {
       tab: Tab,
     },
     iframeContainer: "#root",
+    microApps: [
+      {
+        name: "app1",
+        origin: "http://localhost:5174",
+        activeRule: "/micro-app-1/*",
+      },
+      {
+        name: "app2",
+        origin: "http://localhost:5175",
+        activeRule: "/micro-app-2/*",
+      },
+    ],
   });
   return { mountDom };
 }

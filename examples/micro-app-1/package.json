@@ -1,9 +1,8 @@
 {
-  "name": "@micro-frontend/micro-iframe",
+  "name": "micro-app-1",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "main": "./packages/index.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,15 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@types/lodash-es": "^4.17.12",
-    "lodash-es": "^4.17.21",
-    "mitt": "^3.0.1",
-    "picomatch": "^4.0.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "rollup-plugin-visualizer": "^6.0.0",
-    "sass": "^1.89.0",
-    "vite-plugin-dts": "^4.5.4"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

@@ -30,6 +30,9 @@ export const Router = () => {
   containerBus.event.on("navItemClick", (e) => {
     router.navigate(e.path);
   });
+  containerBus.event.on("menuItemClick", (e) => {
+    router.navigate(e.path);
+  });
   return (
     <Suspense fallback={<div>loading....</div>}>
       <RouterProvider router={router}></RouterProvider>

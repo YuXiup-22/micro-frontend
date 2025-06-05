@@ -1,17 +1,37 @@
+import type { InitContainerData, MicroAppItem } from "./type";
+import { generateData } from "../generate";
+import mitt from "mitt";
 /**
  * container全局管理内容
  * 1.跨组件通信：路由管理
  */
-import mitt from "mitt";
 type Event = {
   /**
    * 顶部导航栏点击事件
    */
   navItemClick: any;
+  /**左侧菜单项点击事件 */
+  menuItemClick: any;
 };
-const channelName = "container";
 
+const channelName = "container";
+const channelData = {
+  /**子应用挂载Dom */
+  iframeMountDom: null as Element | null,
+  /**当前激活的子应用名称 */
+  activeMicroAppName: "",
+  /**子应用列表 */
+  microApps: [] as MicroAppItem[],
+  /**初始化数据 */
+  initOptions: {} as InitContainerData,
+};
+// 生成container管道所有数据和管理方法
+const channelItemData = generateData<typeof channelData>(
+  channelName,
+  channelData
+);
 const channelItem = {
+  data: channelItemData,
   event: mitt<Event>(),
 };
 export const containerChannelItem = {
