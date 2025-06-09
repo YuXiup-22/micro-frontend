@@ -81,12 +81,18 @@ importers:
 
   examples/micro-app-1:
     dependencies:
+      '@micro-frontend/micro-iframe':
+        specifier: workspace:*
+        version: link:../../packages/micro-iframe
       react:
         specifier: ^19.1.0
         version: 19.1.0
       react-dom:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
+      react-router:
+        specifier: ^7.6.1
+        version: 7.6.1(react-dom@19.1.0)(react@19.1.0)
     devDependencies:
       '@eslint/js':
         specifier: ^9.25.0

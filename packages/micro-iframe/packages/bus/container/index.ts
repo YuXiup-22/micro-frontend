@@ -24,6 +24,17 @@ const channelData = {
   microApps: [] as MicroAppItem[],
   /**初始化数据 */
   initOptions: {} as InitContainerData,
+  /** nav的BoundingClientRect信息 */
+  navRect: { x: 0, y: 0, height: 0, width: 0 },
+
+  /** menu的BoundingClientRect信息 */
+  menuRect: { x: 0, y: 0, height: 0, width: 0 },
+
+  /** tab的BoundingClientRect信息 */
+  tabRect: { x: 0, y: 0, height: 0, width: 0 },
+
+  /** mount的BoundingClientRect信息 */
+  mountRect: { x: 0, y: 0, height: 0, width: 0 },
 };
 // 生成container管道所有数据和管理方法
 const channelItemData = generateData<typeof channelData>(

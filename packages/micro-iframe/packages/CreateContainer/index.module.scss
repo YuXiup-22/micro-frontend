@@ -11,6 +11,7 @@
     flex-direction:row ;
     .aside-content{
       height: 100%;
+      min-height:0;
     }
     .main-content{
       flex: 1;
@@ -20,6 +21,7 @@
       .main-section{
         flex: 1;
         min-height: 0;
+        overflow:auto;
         .main-section-content{
           height: 100%;
         }

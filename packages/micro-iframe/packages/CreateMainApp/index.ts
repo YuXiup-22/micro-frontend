@@ -53,6 +53,7 @@ export async function CreateMainApp(
     }
     containerBus.data.set({ activeMicroAppName: matchMicroAppData.name });
     // 根据子应用的状态激活
+    debugger;
     if (checkIframeStatus(matchMicroAppData.name, "REGISTERED")) {
       // TODO:加载激活子应用
       loadIfram(matchMicroAppData.name, {
