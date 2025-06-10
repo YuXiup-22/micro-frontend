@@ -12,6 +12,7 @@
     .aside-content{
       height: 100%;
       min-height:0;
+      // background:green;
     }
     .main-content{
       flex: 1;
@@ -23,7 +24,7 @@
         min-height: 0;
         overflow:auto;
         .main-section-content{
-          height: 100%;
+          max-height: 100%;
         }
       }
     }

@@ -19,9 +19,7 @@ export function CreateContainer(
       throw new Error("iframeContainer must to be #id string or HTMLElement");
 
     const containerBus = bus("container");
-    console.log(containerBus.data.get(), props.type);
     containerBus.data.set({ initOptions: props });
-    console.log(containerBus.data.get(), props.type);
     const handleRefsReady = (refs: ContainerDomRefs) => {
       resolve(refs);
     };

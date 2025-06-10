@@ -36,7 +36,6 @@ export const CreateIframeManager = () => {
   const containerBus = bus("container");
   // 为什么opt是可选呢，情况：只是注册-需要path;失活，则不需要
   const loadIfram = async (id: string, opt?: any) => {
-    debugger;
     // 目前不需要验证是否ref有效，这里肯定有效
     const mountDom = containerBus.data.get(["iframeMountDom"]).iframeMountDom;
     const iframeInfo = iframes.get(id);
@@ -77,6 +76,7 @@ export const CreateIframeManager = () => {
       appInfo: iframeInfo.config,
       parentData: {
         origin: window.origin,
+        layoutData:containerBus.data.get(containerBus.expose.getLayoutDataKeys())
       },
     });
     mountDom?.appendChild(iframe);
@@ -116,7 +116,6 @@ export const CreateIframeManager = () => {
       iframes.set(id, iframeInfo);
     },
     checkIframeStatus: (id: string, status: LifyCycleKeyType) => {
-      debugger;
       return iframes.get(id)?.status === status;
     },
     loadIfram,

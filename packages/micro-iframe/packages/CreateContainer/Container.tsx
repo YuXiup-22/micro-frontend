@@ -9,6 +9,7 @@ import React, {
 import styles from "./index.module.scss";
 import { bus } from "../bus";
 import type { MainAppInitData, InitContainerData } from "../bus/container/type";
+import type { ChanelDataKeyType } from "../bus/container/index";
 export type ContainerDomRefs = {
   headerDom: HTMLDivElement | null;
   menuDom: HTMLDivElement | null;
@@ -26,14 +27,25 @@ type layoutDomRefs = {
   [k in layoutDom]: React.RefObject<HTMLElement | null>;
 };
 /** containerData实时获取最新的数据，并且重写执行函数组件 */
-function useContainerData() {
+function useContainerData(type: ContainerLayoutProps["type"]) {
   const containerBus = bus("container");
   const [data, setData] = useState(containerBus.data.get());
-
+  const basicKey: ChanelDataKeyType[] = [
+    "visible",
+    "frameVisible",
+    "navVisible",
+    "menuVisible",
+    "tabVisible",
+    "mountVisible",
+  ];
+  const watchKeys: ChanelDataKeyType[] =
+    type === "mainApp"
+      ? ["microApps", "activeMicroAppName"]
+      : ["navRect", "menuRect", "tabRect", "mountRect"];
   useEffect(() => {
     const cancel = containerBus.data.watch({
       cb: (newData) => setData(newData),
-      watchKeys: ["microApps", "activeMicroAppName"],
+      watchKeys: basicKey.concat(watchKeys),
     });
     return cancel;
   }, []);
@@ -62,8 +74,7 @@ export default function ContainerLayout({
   });
   const isMainApp = useMemo<boolean>(() => type === "mainApp", [type]);
   const isMicroApp = useMemo<boolean>(() => type === "microApp", [type]);
-  const { data: containerData, update } = useContainerData();
-  console.log(containerData, "containerData---------");
+  const { data: containerData, update } = useContainerData(type);
   const microAppsContainerStyleComputed = useMemo<CSSProperties>(() => {
     const resStyle: CSSProperties = {
       display:
@@ -76,9 +87,41 @@ export default function ContainerLayout({
       left: 0,
       height: "100%",
       width: "100%",
+      pointerEvents: "none",
     };
+    if (isMainApp) {
+      resStyle.pointerEvents =
+        containerData.microAppStickStatue && containerData.activeMicroAppName
+          ? "all"
+          : "none";
+    }
     return resStyle;
-  }, [containerData.activeMicroAppName, containerData.microApps.length]);
+  }, [
+    containerData.activeMicroAppName,
+    containerData.microApps.length,
+    containerData.microAppStickStatue,
+    isMainApp,
+  ]);
+  const microLayoutVisible = useMemo(() => {
+    return {
+      nav:
+        containerData.navVisible ??
+        containerData.frameVisible ??
+        containerData.visible ??
+        true,
+      menu:
+        containerData.menuVisible ??
+        containerData.frameVisible ??
+        containerData.visible ??
+        true,
+      tab:
+        containerData.tabVisible ??
+        containerData.frameVisible ??
+        containerData.visible ??
+        true,
+      mount: containerData.mountVisible ?? containerData.visible ?? true,
+    };
+  }, []);
   const layoutDomRefs: layoutDomRefs = {
     nav: React.createRef(),
     menu: React.createRef(),
@@ -99,9 +142,10 @@ export default function ContainerLayout({
       });
     };
   }, []);
+
   const createLayoutDomObserve = useCallback(
     (e: HTMLElement | null, type: layoutDom) => {
-      if (!e || layoutDomRefs[type].current) return;
+      if (!e || layoutDomRefs[type].current || isMicroApp) return;
       layoutDomRefs[type].current = e;
       const handleChange = () => {
         const { x, y, width, height } = e.getBoundingClientRect() || {};
@@ -117,9 +161,25 @@ export default function ContainerLayout({
     },
     []
   );
+  useEffect(() => {
+    if (!isMicroApp) return;
+    console.log(window.name);
+    let iframeData: any = {};
+    try {
+      iframeData = JSON.parse(window.name);
+    } catch {
+      return;
+    }
+    const { appInfo, parentData } = iframeData;
+    update(parentData.layoutData);
+  }, []);
   return (
     <div className={styles["iframe-base"]}>
-      <header ref={(e) => createLayoutDomObserve(e, "nav")}>
+      <header
+        style={{ display: microLayoutVisible.nav ? "block" : "none" }}
+        // style={{ background: "pink" }}
+        ref={(e) => createLayoutDomObserve(e, "nav")}
+      >
         {isMainApp && <div>{CustomHeader ? <CustomHeader /> : "header"}</div>}
         {isMicroApp && (
           <div
@@ -132,6 +192,7 @@ export default function ContainerLayout({
       </header>
       <section className={styles["iframe-base-content"]}>
         <aside
+          style={{ display: microLayoutVisible.menu ? "block" : "none" }}
           ref={(e) => createLayoutDomObserve(e, "menu")}
           className={styles["aside-content"]}
         >
@@ -154,7 +215,11 @@ export default function ContainerLayout({
           )}
         </aside>
         <main className={styles["main-content"]}>
-          <header ref={(e) => createLayoutDomObserve(e, "tab")}>
+          <header
+            // style={{ background: "red" }}
+            style={{ display: microLayoutVisible.tab ? "block" : "none" }}
+            ref={(e) => createLayoutDomObserve(e, "tab")}
+          >
             {isMainApp && (
               <div
                 ref={(el) => {
@@ -176,6 +241,7 @@ export default function ContainerLayout({
           <section
             ref={(e) => createLayoutDomObserve(e, "mount")}
             className={styles["main-section"]}
+            style={{ display: microLayoutVisible.mount ? "block" : "none" }}
           >
             <div
               ref={(el) => {
