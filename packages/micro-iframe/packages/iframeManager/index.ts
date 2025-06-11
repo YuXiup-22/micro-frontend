@@ -1,5 +1,7 @@
 import type { MicroAppItem } from "../bus/container/type";
 import { bus } from "../bus";
+import mitt from "mitt";
+import { type microAppDataItem } from "../bus/mainApp";
 /**
  * 管理所有子应用的状态
  * 注册/挂载/卸载/激活/失活/销毁/加载/错误
@@ -45,14 +47,13 @@ export const CreateIframeManager = () => {
 
     {
       // TODO: 先隐藏其他的micro-app,同时需要考虑跳转路由和当前路由相同的情况
-      hideIframe();
       Array.from(iframes)
         .map(([id, iframeInfo]) => iframeInfo)
         .filter((item) => item.id !== id)
         .map((item) => hideIframe(item.id));
     }
     {
-      // TODO: deactived状态的，则直接显示后return
+      // TODO: deactived状态的，改为actived,直接显示后return
       if (
         iframeInfo.element &&
         getComputedStyle(iframeInfo.element).display !== "block"
@@ -64,6 +65,7 @@ export const CreateIframeManager = () => {
     }
     iframeInfo.status = "LOADING";
     const iframe = document.createElement("iframe");
+
     let src = iframeInfo.config.origin;
     if (opt?.path) src += opt.path;
     iframe.src = src;
@@ -76,21 +78,34 @@ export const CreateIframeManager = () => {
       appInfo: iframeInfo.config,
       parentData: {
         origin: window.origin,
-        layoutData:containerBus.data.get(containerBus.expose.getLayoutDataKeys())
+        layoutData: containerBus.data.get(
+          containerBus.expose.getLayoutDataKeys()
+        ),
       },
     });
     mountDom?.appendChild(iframe);
-    const [error, e] = await new Promise((resolve) => {
-      iframe.onload = (e) => resolve([null, e]);
-      iframe.onerror = () =>
-        resolve([new Error(`${id} iframe load failed`), null]);
-    });
+    const [error, e] = await new Promise<[Error | null, Event | null]>(
+      (resolve) => {
+        iframe.onload = (e) => {
+          resolve([null, e]);
+        };
+        iframe.onerror = () =>
+          resolve([new Error(`${id} iframe load failed`), null]);
+      }
+    );
     if (error) {
       iframeInfo.status = "ERROR";
       return;
     }
-    iframeInfo.status = "ACTIVATED";
+    console.log(error, e, "error---------------e");
+    // 初次加载，状态为mounted
+    iframeInfo.status = "MOUNTED";
     iframeInfo.element = iframe;
+    const currentTargetIfram = e?.target as HTMLIFrameElement;
+    event.emit("MOUNTED", {
+      ...iframeInfo.config,
+      contentWindow: currentTargetIfram.contentWindow,
+    });
   };
   const hideIframe = (iframeId?: string) => {
     // 获取当前激活子应用
@@ -105,6 +120,9 @@ export const CreateIframeManager = () => {
     iframeInfo.element.style.display = "none";
     iframeInfo.status = "DEACTIVATED";
   };
+  const event = mitt<{
+    [key in LifyCycleKeyType]: microAppDataItem;
+  }>();
   return {
     registerIframe: (id: string, config: MicroAppItem) => {
       const iframeInfo = {
@@ -115,10 +133,16 @@ export const CreateIframeManager = () => {
       };
       iframes.set(id, iframeInfo);
     },
-    checkIframeStatus: (id: string, status: LifyCycleKeyType) => {
+    checkIframeStatus: (
+      id: string,
+      status: LifyCycleKeyType | LifyCycleKeyType[]
+    ) => {
+      if (Array.isArray(status))
+        return status.includes(iframes.get(id)!.status);
       return iframes.get(id)?.status === status;
     },
     loadIfram,
     hideIframe,
+    iframeEvent: event,
   };
 };

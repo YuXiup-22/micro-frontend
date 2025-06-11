@@ -21,7 +21,7 @@ export async function createMainApp() {
       },
       {
         name: "app2",
-        origin: "http://localhost:5175",
+        origin: "http://localhost:5177",
         activeRule: "/micro-app-2/*",
       },
     ],

@@ -163,7 +163,6 @@ export default function ContainerLayout({
   );
   useEffect(() => {
     if (!isMicroApp) return;
-    console.log(window.name);
     let iframeData: any = {};
     try {
       iframeData = JSON.parse(window.name);

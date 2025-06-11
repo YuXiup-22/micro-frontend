@@ -15,13 +15,19 @@ export async function CreateMainApp(
   const { microApps = [] } = props;
   const layoutRefs = await CreateContainer({ ...props, type: "mainApp" });
   const containerBus = bus("container");
+  const mainAppBus = bus("mainApp");
   containerBus.data.set({
     microApps,
     iframeMountDom: layoutRefs.microAppContainer,
   });
-  const { registerIframe, checkIframeStatus, loadIfram, hideIframe } =
-    CreateIframeManager();
-
+  const {
+    registerIframe,
+    checkIframeStatus,
+    loadIfram,
+    hideIframe,
+    iframeEvent,
+  } = CreateIframeManager();
+  iframeEvent.on("MOUNTED", (data) => mainAppBus.expose.connectMicro(data));
   const { addCustomRouterEventListener } = initialRouterEventListener();
   const routerRule = CreateRouterRuleHandle();
   microApps
@@ -30,7 +36,15 @@ export async function CreateMainApp(
       routerRule.addRule(item.name, item.activeRule);
       registerIframe(item.name, item);
     });
-  const handleCustomRouterEvent = () => {
+  const syncRouterToMicroApp = (matchMicroAppItem: any, parentRouter: any) => {
+    const { path } = parentRouter;
+    mainAppBus.cros.send(matchMicroAppItem.name, "syncRouter", {
+      appInfo: matchMicroAppItem,
+      parentRouter,
+      replacePath: path,
+    });
+  };
+  const handleCustomRouterEvent = async () => {
     const mainAppRouterMode =
       containerBus.data.get().initOptions?.router?.mode || "history";
     const { pathname, search, hash } = new URL(window.location.href);
@@ -51,12 +65,28 @@ export async function CreateMainApp(
       hideIframe();
       return;
     }
+    let replacePath = path;
+    if (matchMicroAppData.router?.mode === "hash") replacePath = `/#${path}`;
     containerBus.data.set({ activeMicroAppName: matchMicroAppData.name });
+    const parentRouter = {
+      href: window.location.href,
+      mode: mainAppRouterMode,
+      path: replacePath,
+    };
     // 根据子应用的状态激活
+    if (checkIframeStatus(matchMicroAppData.name, "DEACTIVATED")) {
+      await loadIfram(matchMicroAppData.name, {
+        path,
+      });
+      syncRouterToMicroApp(matchMicroAppData, parentRouter);
+    }
+    if (checkIframeStatus(matchMicroAppData.name, ["ACTIVATED", "MOUNTED"])) {
+      syncRouterToMicroApp(matchMicroAppData, parentRouter);
+    }
     if (checkIframeStatus(matchMicroAppData.name, "REGISTERED")) {
       // TODO:加载激活子应用
-      loadIfram(matchMicroAppData.name, {
-        path,
+      await loadIfram(matchMicroAppData.name, {
+        path: replacePath,
       });
     }
   };

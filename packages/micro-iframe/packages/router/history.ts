@@ -1,7 +1,6 @@
 function createHistoryCustomEvent<T extends keyof History>(type: T) {
   const original = window.history[type];
   return function (this: unknown, ...args: Parameters<History[T]>) {
-    console.log(type, args, "history");
     const result = original.apply(this, args);
     const event = new Event(type);
     window.dispatchEvent(event);
